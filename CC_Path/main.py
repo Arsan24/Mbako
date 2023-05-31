@@ -8,9 +8,9 @@ import os
 
 app = FastAPI() 
 
-# load the .h5 model
+# load the .tflite model
 
-interpreter = tf.lite.Interpreter('../ML_Path/model.tflite')
+interpreter = tf.lite.Interpreter('../ML_Path/ModelV1.tflite')
 interpreter.allocate_tensors()
 
 # Define a Pydantic model for an item
