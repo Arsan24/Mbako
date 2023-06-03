@@ -16,10 +16,12 @@ def item(BaseModel):
 
 # load the .tflite model
 
-interpreter = tf.lite.Interpreter('..\..\ML_Path\ModelV1.tflite')
+interpreter = tf.lite.Interpreter('..\..\ML_Path\ModelV3.tflite')
 interpreter.allocate_tensors()
 
 # Define a Prediction Class
+
+classification = ['Rendah', 'Sedang', 'Tinggi'] #the classification labels
 
 def preprocess_image(image):
     img = Image.open(image.file)
@@ -40,16 +42,13 @@ def predict(image):
 
     output_tensor = interpreter.get_tensor(output_details[0]['index'])
     class_index = np.argmax(output_tensor)
-    class_name = get_class_name(class_index)
+
+    if 0 <= class_index < len(classification):
+        class_name = classification[class_index]
+    else:
+        class_name = 'Unknown'
 
     return class_name
-
-def get_class_name(class_index):
-    classification = ['Rendah', 'Sedang', 'Tinggi']
-    if 0 <= class_index < len(classification):
-        return classification[class_index]
-    else:
-        return 'Unknown'
 
 # Define the API endpoint
 
