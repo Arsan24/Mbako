@@ -16,7 +16,7 @@ def item(BaseModel):
 
 # load the .tflite model
 
-interpreter = tf.lite.Interpreter('..\..\ML_Path\ModelV3.tflite')
+interpreter = tf.lite.Interpreter('./model/ModelV3.tflite')
 interpreter.allocate_tensors()
 
 # Define a Prediction Class
