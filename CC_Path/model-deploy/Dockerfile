@@ -1,4 +1,4 @@
-FROM python:3.7.3
+FROM python:3.10
 
 # Make working directories
 RUN  mkdir -p  /mbako-api
