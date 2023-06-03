@@ -52,10 +52,6 @@ def predict(image):
 
 # Define the API endpoint
 
-@app.get("/")
-def root():
-    return ("Welcome to FastAPI")
-
 @app.post("/predict")
 async def add_item(image: UploadFile = File(...)):
     class_name = predict(image)

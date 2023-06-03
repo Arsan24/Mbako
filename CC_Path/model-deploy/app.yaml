@@ -1,0 +1,2 @@
+runtime: python310
+entrypoint: gunicorn -k uvicorn.workers.UvicornWorker -w 4 main:app
