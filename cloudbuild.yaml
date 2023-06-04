@@ -1,22 +1,23 @@
- steps:
- # Build the container image
- - name: 'gcr.io/cloud-builders/docker'
-   args: ['build', '-t', 'gcr.io/$PROJECT_ID/mbako:$COMMIT_SHA', '.']
- # Push the container image to Container Registry
- - name: 'gcr.io/cloud-builders/docker'
-   args: ['push', 'gcr.io/$PROJECT_ID/mbako:$COMMIT_SHA']
- # Deploy container image to Cloud Run
- - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-   entrypoint: gcloud
-   args:
-   - 'run'
-   - 'deploy'
-   - 'mbako'
-   - '--image'
-   - 'gcr.io/$PROJECT_ID/mbako:$COMMIT_SHA'
-#    delete the line below if you want auth (using gcloud iap)
-   - '--allow-unauthenticated'
-   - '--region'
-   - 'asia-southeast2'
- images:
- - 'gcr.io/$PROJECT_ID/mbako:$COMMIT_SHA'
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/mbako:$COMMIT_SHA', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/mbako:$COMMIT_SHA']
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'mbako'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/mbako:$COMMIT_SHA'
+      - '--allow-unauthenticated'
+      - '--region'
+      - 'asia-southeast2'
+options:
+  serviceAccountEmail: 'mbako-build@mbako-test.iam.gserviceaccount.com'
+  logging:
+    - 'CLOUD_LOGGING_ONLY'
+  substitutionOption: ALLOW_LOOSE
+images:
+  - 'gcr.io/$PROJECT_ID/mbako:$COMMIT_SHA'
