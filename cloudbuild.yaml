@@ -16,8 +16,5 @@ steps:
       - 'asia-southeast2'
 options:
   serviceAccountEmail: 'mbako-build@mbako-test.iam.gserviceaccount.com'
-  logging:
-    - 'CLOUD_LOGGING_ONLY'
-  substitutionOption: ALLOW_LOOSE
 images:
   - 'gcr.io/$PROJECT_ID/mbako:$COMMIT_SHA'
