@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, UploadFile, HTTPException, File
+from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
 import tensorflow as tf
 import numpy as np
@@ -55,7 +55,7 @@ def predict(image):
 @app.post("/predict")
 async def add_item(image: UploadFile = File(...)):
     class_name = predict(image)
-    return {"class_name": class_name}
+    return {class_name}
 
 if __name__ == '__main__':
     uvicorn.run(app, port=8080, host="0.0.0.0", timeout_keep_alive=1200)

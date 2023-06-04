@@ -7,7 +7,7 @@ WORKDIR  /app
 RUN pip install --upgrade pip
 
 # Copy application requirements file to the created working directory
-COPY requirements.txt .
+COPY requirements.txt requirements.txt
 
 # Install application dependencies from the requirements file
 RUN pip install -r requirements.txt
@@ -17,5 +17,7 @@ COPY  . .
 
 # Expose to route 8080
 EXPOSE 8080
+
+ENV PYTHONUNBUFFERED=1
 
 CMD ["uvicorn", "--host", "0.0.0.0", "--port", "8080", "main:app"]
