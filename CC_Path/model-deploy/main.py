@@ -19,7 +19,7 @@ def item(BaseModel):
 interpreter = tf.lite.Interpreter('./model/ModelV3.tflite')
 interpreter.allocate_tensors()
 
-# Define a Prediction Class
+# Define the Preprocess and Prediction Class
 
 classification = ['Rendah', 'Sedang', 'Tinggi'] #the classification labels
 
