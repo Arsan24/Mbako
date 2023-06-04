@@ -15,7 +15,6 @@ steps:
       - '--region'
       - 'asia-southeast2'
 options:
-  logging:
-    - 'CLOUD_LOGGING_ONLY'
+  - logging: ['CLOUD_LOGGING_ONLY']
 images:
   - 'gcr.io/$PROJECT_ID/mbako:$COMMIT_SHA'
