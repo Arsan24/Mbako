@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
 import firebase_admin
@@ -17,7 +17,7 @@ db = firestore.client()
 # define the basemodel
     
 def item(BaseModel):
-    image: UploadFile
+    image: str
     pname: str
     startprice: int
     increment: int
