@@ -25,7 +25,7 @@ def item(BaseModel):
 
 # Define the API endpoint
 
-# API endpoints
+# get list of all items
 @app.get("/api/items")
 def get_items():
     items = []
@@ -39,6 +39,7 @@ def get_items():
 
     return items
 
+# create a new item
 @app.post("/api/items")
 def create_item(item: item):
     item_data = item.dict()
@@ -48,6 +49,7 @@ def create_item(item: item):
 
     return {"message": "item created successfully!"}
 
+# get item by id
 @app.get("/api/items/{item_id}")
 def get_item(item_id: str):
     item_ref = db.collection('items').document(item_id)
