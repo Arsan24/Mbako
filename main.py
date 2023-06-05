@@ -1,61 +1,65 @@
 import uvicorn
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel
-import tensorflow as tf
-import numpy as np
-from PIL import Image
+from datetime import datetime
+import firebase_admin
+from firebase_admin import credentials, firestore
 
 # create a new FastAPI app instance
 
 app = FastAPI() 
 
+# initialize Firebase Admin SDK
+cred = credentials.Certificate("path/to/firebase_credentials.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
+
 # define the basemodel
     
 def item(BaseModel):
     image: UploadFile
-
-# load the .tflite model
-
-interpreter = tf.lite.Interpreter('./model/ModelV3.tflite')
-interpreter.allocate_tensors()
-
-# Define the Preprocess and Prediction Class
-
-classification = ['Rendah', 'Sedang', 'Tinggi'] #the classification labels
-
-def preprocess_image(image):
-    img = Image.open(image.file)
-    img = img.resize((224, 224))
-    img = np.array(img, dtype=np.float32) / 255.0
-    img = np.expand_dims(img, axis=0)
-    return img
-
-def predict(image):
-    preprocessed_image = preprocess_image(image)
-
-    # Perform prediction using the loaded TFLite model
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
-
-    interpreter.set_tensor(input_details[0]['index'], preprocessed_image)
-    interpreter.invoke()
-
-    output_tensor = interpreter.get_tensor(output_details[0]['index'])
-    class_index = np.argmax(output_tensor)
-
-    if 0 <= class_index < len(classification):
-        class_name = classification[class_index]
-    else:
-        class_name = 'Unknown'
-
-    return class_name
+    pname: str
+    startprice: int
+    increment: int
+    timelimit: datetime
 
 # Define the API endpoint
 
-@app.post("/predict")
-async def add_item(image: UploadFile = File(...)):
-    class_name = predict(image)
-    return {class_name}
+# API endpoints
+@app.get("/api/items")
+def get_items():
+    items = []
+    collection_ref = db.collection('items')
+    docs = collection_ref.stream()
 
-if __name__ == '__main__':
-    uvicorn.run(app, port=8080, host="0.0.0.0", timeout_keep_alive=1200)
+    for doc in docs:
+        item = doc.to_dict()
+        item['id'] = doc.id
+        items.append(item)
+
+    return items
+
+@app.post("/api/items")
+def create_item(item: item):
+    item_data = item.dict()
+    collection_ref = db.collection('items')
+    doc_ref = collection_ref.document()
+    doc_ref.set(item_data)
+
+    return {"message": "item created successfully!"}
+
+@app.get("/api/items/{item_id}")
+def get_item(item_id: str):
+    item_ref = db.collection('items').document(item_id)
+    item = item_ref.get()
+
+    if item.exists:
+        return item.to_dict()
+    else:
+        raise HTTPException(status_code=404, detail="item not found")
+
+# Run the app
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+    
