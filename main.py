@@ -17,7 +17,7 @@ db = firestore.client()
 
 # define the basemodel
   
-def item(BaseModel):
+class item(BaseModel):
     image: str
     pname: str
     startprice: int
