@@ -16,7 +16,7 @@ db = firestore.client()
 
 # define the basemodel
     
-def item(BaseModel):
+class Item(BaseModel):
     image: UploadFile
     pname: str
     startprice: int
@@ -25,9 +25,10 @@ def item(BaseModel):
 
 # Define the API endpoint
 
-# API endpoints
+# Get a list of all items.
 @app.get("/api/items")
 def get_items():
+ 
     items = []
     collection_ref = db.collection('items')
     docs = collection_ref.stream()
@@ -39,24 +40,49 @@ def get_items():
 
     return items
 
+# Create a new item.
 @app.post("/api/items")
-def create_item(item: item):
+async def create_item(item: Item):
+ 
     item_data = item.dict()
     collection_ref = db.collection('items')
     doc_ref = collection_ref.document()
     doc_ref.set(item_data)
 
-    return {"message": "item created successfully!"}
+    return {"message": "Item created successfully!"}
 
+# Get a specific item by item_id.
 @app.get("/api/items/{item_id}")
 def get_item(item_id: str):
+ 
     item_ref = db.collection('items').document(item_id)
     item = item_ref.get()
 
     if item.exists:
         return item.to_dict()
     else:
-        raise HTTPException(status_code=404, detail="item not found")
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+# Update a specific item by item_id.
+@app.put("/api/items/{item_id}")
+async def update_item(item_id: str, item: Item):
+ 
+ 
+    updated_item = item.dict()   
+    item_ref = db.collection('items').document(item_id)
+    item_ref.update(updated_item)
+
+    return {"message": "Item updated successfully!"}
+
+
+# Delete a specific item by item_id.
+@app.delete("/api/items/{item_id}")
+def delete_item(item_id: str):
+ 
+    item_ref = db.collection('items').document(item_id)
+    item_ref.delete()
+
+    return {"message": "Item deleted successfully!"}
 
 # Run the app
 if __name__ == "__main__":
