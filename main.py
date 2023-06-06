@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
 import firebase_admin
@@ -16,8 +16,13 @@ db = firestore.client()
 
 # define the basemodel
     
+<<<<<<< HEAD
 class Item(BaseModel):
     image: UploadFile
+=======
+def item(BaseModel):
+    image: str
+>>>>>>> b98531c5678b77126ee1092abe980c9cfa75c1c5
     pname: str
     startprice: int
     increment: int
@@ -25,7 +30,11 @@ class Item(BaseModel):
 
 # Define the API endpoint
 
+<<<<<<< HEAD
 # Get a list of all items.
+=======
+# get list of all items
+>>>>>>> b98531c5678b77126ee1092abe980c9cfa75c1c5
 @app.get("/api/items")
 def get_items():
  
@@ -40,7 +49,11 @@ def get_items():
 
     return items
 
+<<<<<<< HEAD
 # Create a new item.
+=======
+# create a new item
+>>>>>>> b98531c5678b77126ee1092abe980c9cfa75c1c5
 @app.post("/api/items")
 async def create_item(item: Item):
  
@@ -51,7 +64,11 @@ async def create_item(item: Item):
 
     return {"message": "Item created successfully!"}
 
+<<<<<<< HEAD
 # Get a specific item by item_id.
+=======
+# get item by id
+>>>>>>> b98531c5678b77126ee1092abe980c9cfa75c1c5
 @app.get("/api/items/{item_id}")
 def get_item(item_id: str):
  
