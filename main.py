@@ -10,7 +10,7 @@ from firebase_admin import credentials, firestore
 app = FastAPI() 
 
 # initialize Firebase Admin SDK
-cred = credentials.Certificate("path/to/firebase_credentials.json")
+cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
@@ -87,5 +87,5 @@ def delete_item(item_id: str):
 # Run the app
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8080)
     
