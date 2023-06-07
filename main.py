@@ -10,14 +10,13 @@ from firebase_admin import credentials, firestore
 app = FastAPI() 
 
 # initialize Firebase Admin SDK
-
-cred = credentials.Certificate("path/to/firebase_credentials.json")
+cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
 # define the basemodel
-  
-class item(BaseModel):
+
+class Item(BaseModel):
     image: str
     pname: str
     startprice: int
@@ -26,7 +25,7 @@ class item(BaseModel):
 
 # Define the API endpoint
 
-# get list of all items
+# Get a list of all items.
 @app.get("/api/items")
 def get_items():
  
@@ -41,7 +40,7 @@ def get_items():
 
     return items
 
-# create a new item
+# Create a new item.
 @app.post("/api/items")
 async def create_item(item: Item):
  
@@ -88,5 +87,5 @@ def delete_item(item_id: str):
 # Run the app
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8080)
     
