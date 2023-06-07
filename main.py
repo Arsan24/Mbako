@@ -1,13 +1,13 @@
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
-from datetime import datetime
 import firebase_admin
 from firebase_admin import credentials, firestore
-
-# create a new FastAPI app instance
+from passlib.hash import bcrypt
 
 app = FastAPI() 
+security = HTTPBasic()
 
 # initialize Firebase Admin SDK
 cred = credentials.Certificate("serviceAccountKey.json")
@@ -16,14 +16,65 @@ db = firestore.client()
 
 # define the basemodel
 
+# User Registration Data Model
+class UserRegistration(BaseModel):
+    username: str
+    contact: str
+    email: str
+    password: str
+
+# User Login Data Model
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+# Item Data Model
 class Item(BaseModel):
     image: str
     pname: str
-    startprice: int
-    increment: int
-    timelimit: datetime
+    price: int
 
 # Define the API endpoint
+
+
+# Register Endpoint
+@app.post("/register")
+async def register(user: UserRegistration):
+    username = user.username
+    user_ref = db.collection("users").document(username)
+    user_data = user_ref.get()
+
+    if user_data.exists:
+        raise HTTPException(status_code=400, detail="Username sudah digunakan")
+
+    hashed_password = bcrypt.hash(user.password) 
+    user_ref.set({
+        "username": username,
+        "password": hashed_password,
+        "email": user.email,
+        "contact": user.contact
+    })
+
+    return {"User Berhasil Registrasi"}
+
+# User Login Endpoint
+@app.post("/login")
+async def login(credentials: HTTPBasicCredentials):
+    username = credentials.username
+    password = credentials.password
+
+    user_ref = db.collection("users").document(username)
+    user_data = user_ref.get()
+
+    if not user_data.exists:
+        raise HTTPException(status_code=401, detail="username atau kata sandi salah")
+
+    stored_password = user_data.to_dict()["password"]
+
+    if not bcrypt.verify(password, stored_password):
+        raise HTTPException(status_code=401, detail="username atau kata sandi salah")
+
+    return {"message": "Berhasil masuk!"}
 
 # Get a list of all items.
 @app.get("/api/items")
@@ -49,7 +100,7 @@ async def create_item(item: Item):
     doc_ref = collection_ref.document()
     doc_ref.set(item_data)
 
-    return {"message": "Item created successfully!"}
+    return {"message": "Barang berhasil dimasukkan!"}
 
 # Get a specific item by item_id.
 @app.get("/api/items/{item_id}")
@@ -61,7 +112,7 @@ def get_item(item_id: str):
     if item.exists:
         return item.to_dict()
     else:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=404, detail="Barang tidak ditemukan")
     
 # Update a specific item by item_id.
 @app.put("/api/items/{item_id}")
@@ -72,7 +123,7 @@ async def update_item(item_id: str, item: Item):
     item_ref = db.collection('items').document(item_id)
     item_ref.update(updated_item)
 
-    return {"message": "Item updated successfully!"}
+    return {"message": "Barang berhasil diubah"}
 
 
 # Delete a specific item by item_id.
@@ -82,7 +133,7 @@ def delete_item(item_id: str):
     item_ref = db.collection('items').document(item_id)
     item_ref.delete()
 
-    return {"message": "Item deleted successfully!"}
+    return {"message": "Barang berhasil dihapus!"}
 
 # Run the app
 if __name__ == "__main__":
