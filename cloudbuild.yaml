@@ -14,8 +14,6 @@
    - 'backend'
    - '--image'
    - 'gcr.io/$PROJECT_ID/backend:$COMMIT_SHA'
-#    delete the line below if you want auth (using gcloud iap)
-   - '--allow-unauthenticated'
    - '--region'
    - 'asia-southeast2'
  images:
