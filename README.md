@@ -1,1 +1,2 @@
-# Mbako Project
+# Restful API with FastAPI and Firestore
+
