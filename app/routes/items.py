@@ -38,7 +38,7 @@ async def create_item(
 
 # Get a specific item by item_id.
 @router.get("/api/items/{item_id}")
-def get_item(item_id: str = Form(...)):
+def get_item(item_id: str ):
  
     item_ref = db.collection('items').document(item_id)
     item = item_ref.get()
