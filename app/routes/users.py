@@ -11,20 +11,20 @@ security = HTTPBasic()
 
 # Register Endpoint
 @router.post("/register")
-async def register(user: UserRegistration):
-    username = user.username
+async def register(username: str, contact: str, email: str, password: str):
+    username = username
     user_ref = db.collection("users").document(username)
     user_data = user_ref.get()
 
     if user_data.exists:
         raise HTTPException(status_code=400, detail="Username sudah digunakan")
 
-    hashed_password = bcrypt.hash(user.password) 
+    hashed_password = bcrypt.hash(password) 
     user_ref.set({
         "username": username,
         "password": hashed_password,
-        "email": user.email,
-        "contact": user.contact
+        "email": email,
+        "contact": contact
     })
 
     return {"User Berhasil Registrasi"}
