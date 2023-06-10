@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException, status
 from auth.schema import Item
 from auth.dbfirestore import db
 
-
 router = APIRouter()
 
 # Get a list of all items.
@@ -29,7 +28,7 @@ async def create_item(item: Item):
     doc_ref = collection_ref.document()
     doc_ref.set(item_data)
 
-    return {"message": "Barang berhasil dimasukkan!"}
+    return {"message": "Barang berhasil terdaftar!"}
 
 # Get a specific item by item_id.
 @router.get("/api/items/{item_id}")
@@ -52,8 +51,7 @@ async def update_item(item_id: str, item: Item):
     item_ref = db.collection('items').document(item_id)
     item_ref.update(updated_item)
 
-    return {"message": "Barang berhasil diubah"}
-
+    return {"message": "Barang berhasil diubah!"}
 
 # Delete a specific item by item_id.
 @router.delete("/api/items/{item_id}")
