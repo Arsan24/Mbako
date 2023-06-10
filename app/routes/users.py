@@ -5,6 +5,7 @@ from auth.dbfirestore import db
 from passlib.hash import bcrypt
 from firebase_admin import firestore
 from function import generate_token, store_token, send_password_reset_email
+from typing import Annotated
 
 router = APIRouter()
 security = HTTPBasic()
@@ -12,10 +13,10 @@ security = HTTPBasic()
 # Register Endpoint
 @router.post("/register")
 async def register(
-    username: str = Form(...),
-    contact: str = Form(...),
-    email: str = Form(...),
-    password: str = Form(...)
+    username: Annotated[str, Form()],
+    contact: Annotated[str, Form()],
+    email: Annotated[str, Form()],
+    password: Annotated[str, Form()]
 ):
     user_ref = db.collection("users").document(username)
     user_data = user_ref.get()
