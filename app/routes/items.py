@@ -66,7 +66,7 @@ async def update_item(
 
 # Delete a specific item by item_id.
 @router.delete("/api/items/{item_id}")
-def delete_item(item_id: str = Form(...)):
+def delete_item(item_id: str ):
  
     item_ref = db.collection('items').document(item_id)
     item_ref.delete()
