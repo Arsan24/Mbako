@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Form
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from auth.schema import UserRegistration
 from auth.dbfirestore import db
@@ -11,8 +11,12 @@ security = HTTPBasic()
 
 # Register Endpoint
 @router.post("/register")
-async def register(username: str, contact: str, email: str, password: str):
-    username = username
+async def register(
+    username: str = Form(...),
+    contact: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...)
+):
     user_ref = db.collection("users").document(username)
     user_data = user_ref.get()
 
@@ -29,11 +33,26 @@ async def register(username: str, contact: str, email: str, password: str):
 
     return {"User Berhasil Registrasi"}
 
+@router.get("/register")
+def get_users():
+
+    users = []
+    collection_ref = db.collection('users')
+    docs = collection_ref.stream()
+
+    for doc in docs:
+        user = doc.to_dict()
+        user['id'] = doc.id
+        users.append(user)
+
+    return users
+
 # User Login Endpoint
 @router.post("/login")
-async def login(credentials: HTTPBasicCredentials):
-    username = credentials.username
-    password = credentials.password
+async def login(
+    username: str = Form(...),
+    password: str = Form(...)
+):
 
     user_ref = db.collection("users").document(username)
     user_data = user_ref.get()
@@ -50,7 +69,7 @@ async def login(credentials: HTTPBasicCredentials):
 
 # Forgot-password Endpoint
 @router.post("/forgot-password")
-async def forgot_password(email: str):
+async def forgot_password(email: str = Form(...)):
     # Check if the email exists in the database
     users_ref = db.collection("users").where("email", "==", email)
     users = users_ref.get()
@@ -70,7 +89,11 @@ async def forgot_password(email: str):
 
 # Reset Password Endpoint
 @router.post("/reset-password")
-async def reset_password(username: str, token: str, new_password: str):
+async def reset_password(
+    username: str = Form(...), 
+    token: str = Form(...), 
+    new_password: str = Form(...)
+):
     user_ref = db.collection("users").document(username)
     user_data = user_ref.get()
 
