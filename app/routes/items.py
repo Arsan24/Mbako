@@ -21,11 +21,13 @@ def get_items():
 
 # Create a new item.
 @router.post("/api/items")
-async def create_item(item: Item):
- 
+async def create_item(image: str, pname: str, price: int):
+    
+    item = Item(image=image, pname=pname, price=price)
     item_data = item.dict()
     collection_ref = db.collection('items')
     doc_ref = collection_ref.document()
+    item_data['id'] = doc_ref.id
     doc_ref.set(item_data)
 
     return {"message": "Barang berhasil terdaftar!"}
@@ -44,9 +46,9 @@ def get_item(item_id: str):
     
 # Update a specific item by item_id.
 @router.put("/api/items/{item_id}")
-async def update_item(item_id: str, item: Item):
+async def update_item(item_id: str, image: str, pname: str, price: int):
  
- 
+    item = Item(image=image, pname=pname, price=price)
     updated_item = item.dict()   
     item_ref = db.collection('items').document(item_id)
     item_ref.update(updated_item)
