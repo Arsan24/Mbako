@@ -13,10 +13,10 @@ security = HTTPBasic()
 # Register Endpoint
 @router.post("/register")
 async def register(
-    username: Annotated[str, Form()],
-    contact: Annotated[str, Form()],
-    email: Annotated[str, Form()],
-    password: Annotated[str, Form()]
+    username: str = Form(),
+    contact: str = Form(),
+    email: str = Form(),
+    password: str = Form()
 ):
     user_ref = db.collection("users").document(username)
     user_data = user_ref.get()
