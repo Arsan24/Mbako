@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Form
 from auth.schema import Item
 from auth.dbfirestore import db
 
@@ -21,7 +21,11 @@ def get_items():
 
 # Create a new item.
 @router.post("/api/items")
-async def create_item(image: str, pname: str, price: int):
+async def create_item(
+    image: str = Form(...), 
+    pname: str = Form(...), 
+    price: int = Form(...)
+):
     
     item = Item(image=image, pname=pname, price=price)
     item_data = item.dict()
@@ -34,7 +38,7 @@ async def create_item(image: str, pname: str, price: int):
 
 # Get a specific item by item_id.
 @router.get("/api/items/{item_id}")
-def get_item(item_id: str):
+def get_item(item_id: str = Form(...)):
  
     item_ref = db.collection('items').document(item_id)
     item = item_ref.get()
@@ -46,7 +50,12 @@ def get_item(item_id: str):
     
 # Update a specific item by item_id.
 @router.put("/api/items/{item_id}")
-async def update_item(item_id: str, image: str, pname: str, price: int):
+async def update_item(
+    item_id: str = Form(...), 
+    image: str = Form(...), 
+    pname: str = Form(...), 
+    price: int = Form(...)
+):
  
     item = Item(image=image, pname=pname, price=price)
     updated_item = item.dict()   
@@ -57,7 +66,7 @@ async def update_item(item_id: str, image: str, pname: str, price: int):
 
 # Delete a specific item by item_id.
 @router.delete("/api/items/{item_id}")
-def delete_item(item_id: str):
+def delete_item(item_id: str = Form(...)):
  
     item_ref = db.collection('items').document(item_id)
     item_ref.delete()
