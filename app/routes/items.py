@@ -51,10 +51,10 @@ def get_item(item_id: str ):
 # Update a specific item by item_id.
 @router.put("/api/items/{item_id}")
 async def update_item(
-    item_id: str = Form(...), 
-    image: str = Form(...), 
-    pname: str = Form(...), 
-    price: int = Form(...)
+    item_id: str , 
+    image: str , 
+    pname: str , 
+    price: int 
 ):
  
     item = Item(image=image, pname=pname, price=price)
