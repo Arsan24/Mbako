@@ -51,8 +51,8 @@ def get_users():
 # User Login Endpoint
 @router.post("/login")
 async def login(
-    username: str = Form(...),
-    password: str = Form(...)
+    username: str = Form(),
+    password: str = Form()
 ):
 
     user_ref = db.collection("users").document(username)
@@ -70,7 +70,7 @@ async def login(
 
 # Forgot-password Endpoint
 @router.post("/forgot-password")
-async def forgot_password(email: str = Form(...)):
+async def forgot_password(email: str = Form()):
     # Check if the email exists in the database
     users_ref = db.collection("users").where("email", "==", email)
     users = users_ref.get()
@@ -91,9 +91,9 @@ async def forgot_password(email: str = Form(...)):
 # Reset Password Endpoint
 @router.post("/reset-password")
 async def reset_password(
-    username: str = Form(...), 
-    token: str = Form(...), 
-    new_password: str = Form(...)
+    username: str = Form(), 
+    token: str = Form(), 
+    new_password: str = Form()
 ):
     user_ref = db.collection("users").document(username)
     user_data = user_ref.get()

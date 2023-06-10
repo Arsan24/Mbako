@@ -22,9 +22,9 @@ def get_items():
 # Create a new item.
 @router.post("/api/items")
 async def create_item(
-    image: str = Form(...), 
-    pname: str = Form(...), 
-    price: int = Form(...)
+    image: str = Form(), 
+    pname: str = Form(), 
+    price: int = Form()
 ):
     
     item = Item(image=image, pname=pname, price=price)
