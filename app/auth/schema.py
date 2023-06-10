@@ -9,11 +9,6 @@ class UserRegistration(BaseModel):
     email: str
     password: str
 
-# User Login Data Model
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
 # Item Data Model
 class Item(BaseModel):
     image: str
