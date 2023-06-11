@@ -34,11 +34,14 @@ async def create_item(
     item_data['id'] = doc_ref.id
     doc_ref.set(item_data)
 
-    return {"message": "Barang berhasil terdaftar!"}
+    return {
+        "error": False,
+        "message": "Barang berhasil terdaftar!"
+    }
 
 # Get a specific item by item_id.
 @router.get("/api/items/{item_id}")
-def get_item(item_id: str ):
+def get_item(item_id: str):
  
     item_ref = db.collection('items').document(item_id)
     item = item_ref.get()
@@ -51,9 +54,9 @@ def get_item(item_id: str ):
 # Update a specific item by item_id.
 @router.put("/api/items/{item_id}")
 async def update_item(
-    item_id: str , 
-    image: str , 
-    pname: str , 
+    item_id: str, 
+    image: str, 
+    pname: str, 
     price: int 
 ):
  
@@ -62,13 +65,19 @@ async def update_item(
     item_ref = db.collection('items').document(item_id)
     item_ref.update(updated_item)
 
-    return {"message": "Barang berhasil diubah!"}
+    return {
+        "error": False,
+        "message": "Barang berhasil diubah!"
+    }
 
 # Delete a specific item by item_id.
 @router.delete("/api/items/{item_id}")
-def delete_item(item_id: str ):
+def delete_item(item_id: str):
  
     item_ref = db.collection('items').document(item_id)
     item_ref.delete()
 
-    return {"message": "Barang berhasil dihapus!"}
+    return {
+        "error": False,
+        "message": "Barang berhasil dihapus!"
+    }
