@@ -1,9 +1,20 @@
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse
 from routes.users import router as users_router
 from routes.items import router as items_router
 
 app = FastAPI() 
+
+
+# Exception handler
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": True, "message": exc.detail}
+    )
 
 # Define the API endpoint
 

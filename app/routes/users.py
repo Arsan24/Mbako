@@ -1,22 +1,10 @@
-from fastapi import APIRouter, HTTPException, Form, Request
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException, Form
 from auth.dbfirestore import db
 from passlib.hash import bcrypt
 from firebase_admin import firestore
 from function import generate_token, store_token, send_password_reset_email
-from typing import Annotated
 
 router = APIRouter()
-
-
-# Exception return
-@router.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"error": True, "message": exc.detail}
-    )
-
 
 # Register Endpoint
 @router.post("/register")
@@ -44,8 +32,6 @@ async def register(
         "error": False,
         "message": "User registered successfully!"
     }
-
-
 
 # User Login Endpoint
 @router.post("/login")
