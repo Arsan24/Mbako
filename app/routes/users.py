@@ -60,7 +60,7 @@ async def login(
     return {
         "error": False, 
         "message": "Berhasil masuk!", 
-        "LoginResult": user_info
+        "loginResult": user_info
     }
 
 # Forgot-password Endpoint
@@ -81,7 +81,10 @@ async def forgot_password(email: str = Form()):
     # Send the password reset email
     send_password_reset_email(email, reset_token)
 
-    return {"message": "Token reset paswword telah dikirim melalui email"}
+    return {
+        "error": False,
+        "message": "Token reset paswword telah dikirim melalui email"
+    }
 
 # Reset Password Endpoint
 @router.post("/reset-password")
@@ -106,4 +109,7 @@ async def reset_password(
     user_ref.update({"password": new_pass})
     user_ref.update({"reset_token": firestore.DELETE_FIELD})
 
-    return {"message": "Password berhasil diubah"}
+    return {
+        "error": False,
+        "message": "Password berhasil diubah"
+    }
