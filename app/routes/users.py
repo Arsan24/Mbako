@@ -1,6 +1,5 @@
-from fastapi import APIRouter, HTTPException, Form
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from auth.schema import UserRegistration
+from fastapi import APIRouter, HTTPException, Form, Request
+from fastapi.responses import JSONResponse
 from auth.dbfirestore import db
 from passlib.hash import bcrypt
 from firebase_admin import firestore
@@ -8,7 +7,16 @@ from function import generate_token, store_token, send_password_reset_email
 from typing import Annotated
 
 router = APIRouter()
-security = HTTPBasic()
+
+
+# Exception return
+@router.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": True, "message": exc.detail}
+    )
+
 
 # Register Endpoint
 @router.post("/register")
@@ -32,21 +40,12 @@ async def register(
         "contact": contact
     })
 
-    return {"User Berhasil Registrasi"}
+    return {
+        "error": False,
+        "message": "User registered successfully!"
+    }
 
-@router.get("/register")
-def get_users():
 
-    users = []
-    collection_ref = db.collection('users')
-    docs = collection_ref.stream()
-
-    for doc in docs:
-        user = doc.to_dict()
-        user['id'] = doc.id
-        users.append(user)
-
-    return users
 
 # User Login Endpoint
 @router.post("/login")
