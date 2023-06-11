@@ -51,7 +51,17 @@ async def login(
     if not bcrypt.verify(password, stored_password):
         raise HTTPException(status_code=401, detail="Username atau kata sandi salah")
 
-    return {"message": "Berhasil masuk!"}
+    user_info = {
+        "username": user_data.to_dict()["username"],
+        "contact": user_data.to_dict()["contact"],
+        "email": user_data.to_dict()["email"]
+    }
+
+    return {
+        "error": False, 
+        "message": "Berhasil masuk!", 
+        "LoginResult": user_info
+    }
 
 # Forgot-password Endpoint
 @router.post("/forgot-password")
