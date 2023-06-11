@@ -30,7 +30,7 @@ async def register(
 
     return {
         "error": False,
-        "message": "User registered successfully!"
+        "message": "User berhasil terdaftar!"
     }
 
 # User Login Endpoint
