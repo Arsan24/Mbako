@@ -4,6 +4,7 @@ from auth.dbfirestore import db
 import base64
 from PIL import Image
 import io
+from datetime import datetime
 
 router = APIRouter()
 
@@ -56,7 +57,12 @@ def get_item(item_id: str):
     item = item_ref.get()
 
     if item.exists:
-        return item.to_dict()
+        item_data = item.to_dict()
+        if 'image' in item_data:
+            image_base64 = item_data['image']
+            image_bytes = base64.b64decode(image_base64)
+            item_data['image'] = image_bytes
+        return item_data
     else:
         raise HTTPException(status_code=404, detail="Barang tidak ditemukan")
     
@@ -64,21 +70,30 @@ def get_item(item_id: str):
 @router.put("/api/items/{item_id}")
 async def update_item(
     item_id: str, 
-    image: str, 
-    pname: str, 
-    price: int,
-    quantity: int
+    image: bytes = File(default=None), 
+    pname: str = Form(), 
+    price: int = Form(),
+    quantity: int = Form()
 ):
- 
-    item = Item(image=image, pname=pname, price=price, quantity=quantity)
-    updated_item = item.dict()   
     item_ref = db.collection('items').document(item_id)
-    item_ref.update(updated_item)
+    item = item_ref.get()
 
-    return {
-        "error": False,
-        "message": "Barang berhasil diubah!"
-    }
+    if item.exists:
+        item_data = item.to_dict()
+        if image is not None:
+            image_base64 = base64.b64encode(image).decode('utf-8')
+            item_data['image'] = image_base64
+        item_data['pname'] = pname
+        item_data['price'] = price
+        item_data['quantity'] = quantity
+        item_ref.update(item_data)
+
+        return {
+            "error": False,
+            "message": "Barang berhasil diubah!"
+        }
+    else:
+        raise HTTPException(status_code=404, detail="Barang tidak ditemukan")
 
 # Delete a specific item by item_id.
 @router.delete("/api/items/{item_id}")
@@ -92,26 +107,37 @@ def delete_item(item_id: str):
         "message": "Barang berhasil dihapus!"
     }
 
+# update the stock on purchased and save the transaction record
 @router.post("/api/items/{item_id}/buy")
 async def buy_item(item_id: str, quantity: int):
-    # Retrieve the item from the database
+
     item_ref = db.collection('items').document(item_id)
     item = item_ref.get()
 
     if item.exists:
-        # Get the current quantity of the item
-        current_quantity = item.get('quantity', 0)
-
+        item_data = item.to_dict()
+        current_quantity = item_data.get('quantity', 0)
+        item_price = item_data.get('price')
         if current_quantity >= quantity:
-            # Calculate the new quantity after selling
+            total_price = item_price * quantity
             new_quantity = current_quantity - quantity
-
-            # Update the quantity in the database
             item_ref.update({'quantity': new_quantity})
+
+            # Save transaction record
+            
+            transaction_data = {
+                'item_id': item_id,
+                'product': item_data.get('pname'),
+                'quantity': quantity,
+                'total_price': total_price,
+                'timestamp': datetime.now().isoformat()
+            }
+            transaction_ref = db.collection('transactions').document()
+            transaction_ref.set(transaction_data)
 
             return {
                 "error": False,
-                "message": f"Item berhasil dibeli, sisa stok: {new_quantity}"
+                "message": f"Total pembelian: {total_price}"
             }
         else:
             return {
