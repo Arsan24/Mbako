@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, Form
+from fastapi import APIRouter, HTTPException, Form, UploadFile
 from auth.schema import Item
 from auth.dbfirestore import db
+import base64
 
 router = APIRouter()
 
@@ -22,13 +23,15 @@ def get_items():
 # Create a new item.
 @router.post("/api/items")
 async def create_item(
-    image: str = Form(), 
+    image: UploadFile = Form(), 
     pname: str = Form(), 
     price: int = Form(),
     quantity: int = Form()
 ):
     
-    item = Item(image=image, pname=pname, price=price, quantity=quantity)
+    image_content = await image.read()
+    img_base64 = base64.b64encode(image_content).decode('utf-8')
+    item = Item(image=img_base64, pname=pname, price=price, quantity=quantity)
     item_data = item.dict()
     collection_ref = db.collection('items')
     doc_ref = collection_ref.document()
