@@ -1,2 +1,2 @@
-# Restful API with FastAPI and Firestore
+# Backend using FastAPI and Firestore
 
