@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 # define the basemodel
 
@@ -15,3 +16,4 @@ class Item(BaseModel):
     pname: str
     price: int
     quantity: int
+    createdAt: datetime
