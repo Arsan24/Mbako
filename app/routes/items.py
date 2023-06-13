@@ -27,10 +27,6 @@ def get_items(page: Optional[int] = None, size: Optional[int] = None):
         item = doc.to_dict()
         item_id = doc.id
         item['item_id'] = item_id
-        encoded_image = item['image']
-        image_bytes = base64.b64decode(encoded_image)
-        decoded_image = Image.open(io.BytesIO(image_bytes))
-        item['image'] = decoded_image
         items.append(item)
 
     return {
