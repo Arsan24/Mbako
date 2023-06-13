@@ -15,6 +15,7 @@ def get_items(page: Optional[int] = None, size: Optional[int] = None):
  
     items = []
     collection_ref = db.collection('items')
+
     if page is not None and size is not None:
         start_index = (page - 1) * size
         end_index = start_index + size
@@ -24,7 +25,8 @@ def get_items(page: Optional[int] = None, size: Optional[int] = None):
 
     for doc in docs:
         item = doc.to_dict()
-        item['id'] = doc.id
+        item_id = doc.id
+        item['item_id'] = item_id
         encoded_image = item['image']
         image_bytes = base64.b64decode(encoded_image)
         decoded_image = Image.open(io.BytesIO(image_bytes))
