@@ -14,3 +14,4 @@ class Item(BaseModel):
     image: str
     pname: str
     price: int
+    quantity: int
