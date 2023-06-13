@@ -5,16 +5,22 @@ import base64
 from PIL import Image
 import io
 from datetime import datetime
+from typing import Optional 
 
 router = APIRouter()
 
 # Get a list of all items.
 @router.get("/api/items")
-def get_items():
+def get_items(page: Optional[int] = None, size: Optional[int] = None):
  
     items = []
     collection_ref = db.collection('items')
-    docs = collection_ref.stream()
+    if page is not None and size is not None:
+        start_index = (page - 1) * size
+        end_index = start_index + size
+        docs = collection_ref.stream()[start_index:end_index]
+    else:
+        docs = collection_ref.stream()
 
     for doc in docs:
         item = doc.to_dict()
@@ -25,7 +31,11 @@ def get_items():
         item['image'] = decoded_image
         items.append(item)
 
-    return items
+    return {
+        "error": False,
+        "message": "Get Item Success!",
+        "listItems": items
+    }
 
 # Create a new item.
 @router.post("/api/items")
