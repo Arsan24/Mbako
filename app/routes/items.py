@@ -83,7 +83,7 @@ async def create_item(
 # Get a specific item by item_id.
 @router.get("/api/items/:{item_id}")
 def get_item(
-    item_id: str = Query(),
+    item_id: str | None,
     token: str = Depends(oauth2_scheme)
 ):
     decoded_token = decodeJWT(token)
