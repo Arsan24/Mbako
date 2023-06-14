@@ -46,7 +46,7 @@ async def create_item(
     
     img_base64 = base64.b64encode(image).decode('utf-8')
     createdAt = datetime.now()
-    item = Item(image=img_base64, pname=pname, price=price, quantity=quantity)
+    item = Item(image=img_base64, pname=pname, price=price, quantity=quantity, createdAt=createdAt)
     item_data = item.dict()
     collection_ref = db.collection('items')
     doc_ref = collection_ref.document()
