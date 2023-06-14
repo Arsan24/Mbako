@@ -46,3 +46,10 @@ def generate_access_token(username: str):
     }
     access_token = jwt.encode(payload, secret_key, algorithm='HS256')
     return access_token
+
+def decodeJWT(access_token: str):
+    try:
+        decode_token = jwt.encode(access_token, secret_key, algorithm='HS256')
+        return  decode_token if decode_token['expires'] >= time.time() else None
+    except: 
+        return {}
