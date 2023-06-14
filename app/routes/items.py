@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Form, File, Header, Depends, Query
+from fastapi import APIRouter, HTTPException, Form, File, Header, Depends
 from fastapi.security import OAuth2PasswordBearer
 from function import decodeJWT
 from auth.schema import Item
@@ -15,11 +15,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 # Get a list of all items.
 @router.get("/api/items")
 def get_items(
-    token: str = Depends(oauth2_scheme),
+    authorization: str = Depends(oauth2_scheme),
     page: Optional[int] = None, 
     size: Optional[int] = None
 ):
-    decoded_token = decodeJWT(token)
+    decoded_token = decodeJWT(authorization)
     if not decoded_token:
         return {"error": "Invalid token"}
 
@@ -52,13 +52,13 @@ def get_items(
 # Create a new item.
 @router.post("/api/items")
 async def create_item(
-    token: str = Depends(oauth2_scheme),
+    authorization: str = Depends(oauth2_scheme),
     image: bytes = File(), 
     pname: str = Form(), 
     price: int = Form(),
     quantity: int = Form()
 ):
-    decoded_token = decodeJWT(token)
+    decoded_token = decodeJWT(authorization)
     if not decoded_token:
         return {"error": "Invalid token"}
 
@@ -84,9 +84,9 @@ async def create_item(
 @router.get("/api/items/:{item_id}")
 def get_item(
     item_id: str | None,
-    token: str = Depends(oauth2_scheme)
+    authorization: str = Depends(oauth2_scheme)
 ):
-    decoded_token = decodeJWT(token)
+    decoded_token = decodeJWT(authorization)
     if not decoded_token:
         return {"error": "Invalid token"}
 
