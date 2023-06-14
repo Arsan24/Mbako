@@ -1,12 +1,10 @@
 from fastapi import APIRouter, HTTPException, Form
-from fastapi.security import OAuth2PasswordBearer
 from auth.dbfirestore import db
 from passlib.hash import bcrypt
 from firebase_admin import firestore
 from function import generate_token, store_token, send_password_reset_email, generate_access_token
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 # Register Endpoint
 @router.post("/register")
@@ -57,13 +55,14 @@ async def login(
 
     user_info = {
         "username": user_data.to_dict()["username"],
-        "token": access_token
+        "access_token": access_token,
+        "token_type":"bearer"
     }
 
     return {
         "error": False, 
         "message": "Berhasil masuk!", 
-        "loginResult": user_info
+        "loginResult": user_info,
     }
 
 # Forgot-password Endpoint

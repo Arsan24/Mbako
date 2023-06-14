@@ -4,10 +4,9 @@ from function import decodeJWT
 from auth.schema import Item
 from auth.dbfirestore import db
 import base64
-from PIL import Image
-import io
 from datetime import datetime
 from typing import Optional 
+import itertools
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
@@ -27,13 +26,14 @@ def get_items(
     if not username:
         return {"error": "Invalid token"}
     
+
     items = []
     collection_ref = db.collection('items')
 
     if page is not None and size is not None:
         start_index = (page - 1) * size
         end_index = start_index + size
-        docs = collection_ref.stream()[start_index:end_index]
+        docs = itertools.islice(collection_ref.stream(), start_index, end_index)
     else:
         docs = collection_ref.stream()
 

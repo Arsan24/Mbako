@@ -2,7 +2,8 @@ from random import randint
 from auth.dbfirestore import db
 import smtplib
 from email.message import EmailMessage
-import time 
+import datetime
+import time
 import jwt
 
 
@@ -50,7 +51,9 @@ def generate_access_token(username: str):
 
 def decodeJWT(access_token: str):
     try:
-        decode_token = jwt.decode(access_token, secret_key, algorithm='HS256')
-        return  decode_token if decode_token['exp'] >= time.time() else None
-    except: 
-        return {}
+        decode_token = jwt.decode(access_token, secret_key, algorithms=['HS256'])
+        return decode_token if decode_token['exp'] >= time.time() else None
+    except jwt.DecodeError:
+        return {"error": "Invalid token"}  
+    except jwt.ExpiredSignatureError:
+        return {"error": "token expired"}  
