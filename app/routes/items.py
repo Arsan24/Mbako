@@ -72,7 +72,7 @@ async def create_item(
     item_data = item.dict()
     collection_ref = db.collection('items')
     doc_ref = collection_ref.document()
-    item_data['id'] = doc_ref.id
+    item_data['item_id'] = doc_ref.id
     doc_ref.set(item_data)
 
     return {
