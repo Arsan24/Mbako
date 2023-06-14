@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException, Form, File, Header
+from fastapi import APIRouter, HTTPException, Form, File, Header, Depends, Query
+from fastapi.security import OAuth2PasswordBearer
+from function import decodeJWT
 from auth.schema import Item
 from auth.dbfirestore import db
 import base64
@@ -8,11 +10,23 @@ from datetime import datetime
 from typing import Optional 
 
 router = APIRouter()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 # Get a list of all items.
 @router.get("/api/items")
-def get_items(page: Optional[int] = None, size: Optional[int] = None):
- 
+def get_items(
+    token: str = Depends(oauth2_scheme),
+    page: Optional[int] = None, 
+    size: Optional[int] = None
+):
+    decoded_token = decodeJWT(token)
+    if not decoded_token:
+        return {"error": "Invalid token"}
+
+    username = decoded_token.get("sub")
+    if not username:
+        return {"error": "Invalid token"}
+    
     items = []
     collection_ref = db.collection('items')
 
@@ -38,11 +52,19 @@ def get_items(page: Optional[int] = None, size: Optional[int] = None):
 # Create a new item.
 @router.post("/api/items")
 async def create_item(
+    token: str = Depends(oauth2_scheme),
     image: bytes = File(), 
     pname: str = Form(), 
     price: int = Form(),
     quantity: int = Form()
 ):
+    decoded_token = decodeJWT(token)
+    if not decoded_token:
+        return {"error": "Invalid token"}
+
+    username = decoded_token.get("sub")
+    if not username:
+        return {"error": "Invalid token"}
     
     img_base64 = base64.b64encode(image).decode('utf-8')
     createdAt = datetime.now()
@@ -59,9 +81,19 @@ async def create_item(
     }
 
 # Get a specific item by item_id.
-@router.get("/api/items/{item_id}")
-def get_item(item_id: str):
- 
+@router.get("/api/items/:{item_id}")
+def get_item(
+    item_id: str = Query(),
+    token: str = Depends(oauth2_scheme)
+):
+    decoded_token = decodeJWT(token)
+    if not decoded_token:
+        return {"error": "Invalid token"}
+
+    username = decoded_token.get("sub")
+    if not username:
+        return {"error": "Invalid token"}
+    
     item_ref = db.collection('items').document(item_id)
     item = item_ref.get()
 
@@ -71,7 +103,11 @@ def get_item(item_id: str):
             image_base64 = item_data['image']
             image_bytes = base64.b64decode(image_base64)
             item_data['image'] = image_bytes
-        return item_data
+        return {
+        "error": False,
+        "message": "Get Item Success!",
+        "listItems": item_data
+    }
     else:
         raise HTTPException(status_code=404, detail="Barang tidak ditemukan")
     

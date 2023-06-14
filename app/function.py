@@ -2,6 +2,9 @@ from random import randint
 from auth.dbfirestore import db
 import smtplib
 from email.message import EmailMessage
+from main import secret_key
+import time 
+import jwt
 
 # Configure smtp settings
 smtp_host = "smtp.gmail.com"
@@ -34,3 +37,12 @@ def send_password_reset_email(email, token):
     smtp_server.send_message(msg)
 
     return {"message": "Email reset password telah dikirim"}
+
+# Generate access token
+def generate_access_token(username: str):
+    payload = {
+        "exp": time.time() + 1800, 
+        "sub": username
+    }
+    access_token = jwt.encode(payload, secret_key, algorithm='HS256')
+    return access_token
