@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI, Request, status 
 from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.responses import JSONResponse
-from fastapi_sessions import SessionMiddleware, CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware, CORSMiddleware
 from routes.users import router as users_router
 from routes.items import router as items_router
 
