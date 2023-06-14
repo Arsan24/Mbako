@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Form, File
+from fastapi import APIRouter, HTTPException, Form, File, Header
 from auth.schema import Item
 from auth.dbfirestore import db
 import base64
@@ -46,7 +46,7 @@ async def create_item(
     
     img_base64 = base64.b64encode(image).decode('utf-8')
     createdAt = datetime.datetime.now()
-    item = Item(image=img_base64, pname=pname, price=price, quantity=quantity, createdAt=createdAt)
+    item = Item(image=img_base64, pname=pname, price=price, quantity=quantity)
     item_data = item.dict()
     collection_ref = db.collection('items')
     doc_ref = collection_ref.document()
@@ -118,7 +118,11 @@ def delete_item(item_id: str):
 
 # update the stock on purchased and save the transaction record
 @router.post("/api/items/{item_id}/buy")
-async def buy_item(item_id: str, quantity: int):
+async def buy_item(
+    item_id: str, 
+    quantity: int = Form(),
+    username: str = Header(None)
+):
 
     item_ref = db.collection('items').document(item_id)
     item = item_ref.get()
@@ -136,6 +140,7 @@ async def buy_item(item_id: str, quantity: int):
             
             transaction_data = {
                 'item_id': item_id,
+                'buyer': username,
                 'product': item_data.get('pname'),
                 'quantity': quantity,
                 'total_price': total_price,
@@ -146,7 +151,8 @@ async def buy_item(item_id: str, quantity: int):
 
             return {
                 "error": False,
-                "message": f"Total pembelian: {total_price}"
+                "message": f"Pembelian Berhasil!",
+                "transactionResult": transaction_data
             }
         else:
             return {
