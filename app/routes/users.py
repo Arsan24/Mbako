@@ -55,14 +55,17 @@ async def login(
 
     user_info = {
         "username": user_data.to_dict()["username"],
-        "access_token": access_token,
-        "token_type":"bearer"
+        "contact": user_data.to_dict()["contact"],
+        "email": user_data.to_dict()["email"],
+        "token": access_token
     }
 
     return {
         "error": False, 
         "message": "Berhasil masuk!", 
         "loginResult": user_info,
+        "access_token": access_token,
+        "token_type":"bearer"
     }
 
 # Forgot-password Endpoint
