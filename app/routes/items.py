@@ -148,11 +148,14 @@ def delete_item(item_id: str = Path()):
 # update the stock on purchased and save the transaction record
 @router.post("/api/items/:{item_id}/buy")
 async def buy_item(
-    item_id: str = Path(), 
+    request_data: dict, 
     authorization: str = Depends(oauth2_scheme),
     quantity: int = Form(),
 ):
-    
+    item_id = request_data.get("item_id")
+    if not item_id:
+        return {"error": "Item ID is missing"}
+
     decoded_token = decodeJWT(authorization)
     if not decoded_token:
         return {"error": "Invalid token"}
