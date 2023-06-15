@@ -1,8 +1,9 @@
 from random import randint
+from google.cloud import storage
 from auth.dbfirestore import db
 import smtplib
 from email.message import EmailMessage
-import datetime
+import uuid
 import time
 import jwt
 
@@ -57,3 +58,13 @@ def decodeJWT(access_token: str):
         return {"error": "Invalid token"}  
     except jwt.ExpiredSignatureError:
         return {"error": "token expired"}  
+    
+# Store image in Cloud Buckets
+def upload_to_bucket(image_file):
+    client = storage.Client()
+    bucket = client.bucket('mbakoitem-bucket')
+    image_name = f"{uuid.uuid4().hex()}.jpg"
+    blob = bucket.blob(f"mbako-image/{image_name}") 
+    blob.upload_from_file(image_file, content_type='image/jpeg')
+
+    return blob.public_url

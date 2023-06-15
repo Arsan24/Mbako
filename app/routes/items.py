@@ -1,9 +1,8 @@
 from fastapi import APIRouter, HTTPException, Form, File, Header, Depends, UploadFile
 from fastapi.security import OAuth2PasswordBearer
-from function import decodeJWT
+from function import decodeJWT, upload_to_bucket
 from auth.schema import Item
 from auth.dbfirestore import db
-import base64
 from datetime import datetime
 from typing import Optional 
 import itertools
@@ -66,9 +65,9 @@ async def create_item(
     if not username:
         return {"error": "Invalid token"}
     
-    img_base64 = base64.b64encode(image).decode('utf-8')
+    image_url = upload_to_bucket(image.file)
     createdAt = datetime.now()
-    item = Item(image=img_base64, pname=pname, price=price, quantity=quantity, createdAt=createdAt)
+    item = Item(image=image_url, pname=pname, price=price, quantity=quantity, createdAt=createdAt)
     item_data = item.dict()
     collection_ref = db.collection('items')
     doc_ref = collection_ref.document()
@@ -99,10 +98,6 @@ def get_item(
 
     if item.exists:
         item_data = item.to_dict()
-        if 'image' in item_data:
-            image_base64 = item_data['image']
-            image_bytes = base64.b64decode(image_base64)
-            item_data['image'] = image_bytes
         return {
         "error": False,
         "message": "Get Item Success!",
@@ -115,7 +110,7 @@ def get_item(
 @router.put("/api/items/:{item_id}")
 async def update_item(
     item_id: str, 
-    image: bytes = File(default=None), 
+    image: UploadFile = File(default=None), 
     pname: str = Form(), 
     price: int = Form(),
     quantity: int = Form()
@@ -125,9 +120,7 @@ async def update_item(
 
     if item.exists:
         item_data = item.to_dict()
-        if image is not None:
-            image_base64 = base64.b64encode(image).decode('utf-8')
-            item_data['image'] = image_base64
+        item_data['image'] = image
         item_data['pname'] = pname
         item_data['price'] = price
         item_data['quantity'] = quantity

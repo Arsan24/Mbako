@@ -13,7 +13,7 @@ class UserRegistration(BaseModel):
 
 # Item Data Model
 class Item(BaseModel):
-    image: UploadFile
+    image: str
     pname: str
     price: int
     quantity: int
