@@ -63,7 +63,7 @@ def decodeJWT(access_token: str):
 def upload_to_bucket(image_file):
     client = storage.Client()
     bucket = client.bucket('mbakoitem-bucket')
-    image_name = f"{uuid.uuid4().hex()}.jpg"
+    image_name = f"{uuid.uuid4().hex}.jpg"
     blob = bucket.blob(f"mbako-image/{image_name}") 
     blob.upload_from_file(image_file, content_type='image/jpeg')
 
