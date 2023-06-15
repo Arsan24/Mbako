@@ -149,10 +149,18 @@ def delete_item(item_id: str):
 @router.post("/api/items/:{item_id}/buy")
 async def buy_item(
     item_id: str | None, 
+    authorization: str = Depends(oauth2_scheme),
     quantity: int = Form(),
-    username: str = Header(None)
 ):
+    
+    decoded_token = decodeJWT(authorization)
+    if not decoded_token:
+        return {"error": "Invalid token"}
 
+    username = decoded_token.get("sub")
+    if not username:
+        return {"error": "Invalid token"}
+    
     item_ref = db.collection('items').document(item_id)
     item = item_ref.get()
 
@@ -181,7 +189,6 @@ async def buy_item(
             return {
                 "error": False,
                 "message": f"Pembelian Berhasil!",
-                "transactionResult": transaction_data
             }
         else:
             return {
