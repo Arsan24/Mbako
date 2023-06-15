@@ -51,11 +51,20 @@ def send_password_reset_email(email, token):
     try:
         smtp_server = establish_smtp_connection()
 
+        subject = "Reset Password"
+        body =  f"Token untuk reset password telah dikirim ke email: {email}.\n" \
+                f"Token: {token}\n\n" \
+                f"Token ini hanya bisa digunakan selama 10 menit,\n" \
+                f"setelah 10 menit berlalu token tidak akan valid.\n" \
+                f"Apabila anda tidak melakukan permintaan reset password, abaikan saja pesan ini.\n\n" \
+                f"Mbako Project" 
+
+
         msg = EmailMessage()
-        msg['Subject'] = "Reset Password"
+        msg['Subject'] = subject
         msg['From'] = smtp_username
         msg['To'] = email
-        msg.set_content(f"Password reset email sent to {email}. Token: {token}")
+        msg.set_content(body)
 
         smtp_server.send_message(msg)
 
