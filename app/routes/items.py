@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Form, Path, File, Header, Depends, UploadFile
 from fastapi.security import OAuth2PasswordBearer
 from function import decodeJWT, upload_to_bucket
-from auth.schema import Item, BuyItem
+from auth.schema import Item
 from auth.dbfirestore import db
 from datetime import datetime
 from typing import Optional 
