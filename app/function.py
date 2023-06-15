@@ -6,13 +6,17 @@ from email.message import EmailMessage
 import uuid
 import time
 import jwt
+import os
+
+app_email = os.environ.get('SMTP_EMAIL')
+app_password = os.environ.get('SMTP_PASS')
 
 
 # Configure smtp settings
 smtp_host = "smtp.gmail.com"
 smtp_port = 465
-smtp_username = "m.shafanatama@gmail.com"
-smtp_password = "sllbpeqebvfberoc"
+smtp_username = app_email
+smtp_password = app_password
 
 # Create a connection to the SMTP server
 smtp_server = smtplib.SMTP_SSL(smtp_host, smtp_port)
@@ -39,7 +43,7 @@ def send_password_reset_email(email, token):
 
     return {"message": "Email reset password telah dikirim"}
 
-secret_key="9f6bd57617dc7827602641f05b611bf2e33f674c3b57010d7e5e42a50035bcf2"
+secret_key = os.environ.get('SECRET_KEY')
 
 # Generate access token
 def generate_access_token(username: str):
