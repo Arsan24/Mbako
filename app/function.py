@@ -19,8 +19,14 @@ smtp_username = "m.shafanatama@gmail.com"
 smtp_password = "sllbpeqebvfberoc"
 
 # Create a connection to the SMTP server
-smtp_server = smtplib.SMTP_SSL(smtp_host, smtp_port)
-smtp_server.login(smtp_username, smtp_password)
+def establish_smtp_connection():
+    try:
+        smtp_server = smtplib.SMTP_SSL(smtp_host, smtp_port)
+        smtp_server.login(smtp_username, smtp_password)
+        return smtp_server
+    except Exception as e:
+        raise Exception("Failed to establish SMTP connection") from e
+
 
 # Generate a random token
 def generate_token():
@@ -33,17 +39,27 @@ def store_token(user_id, token):
 
 # Send password reset email
 def send_password_reset_email(email, token):
-    msg = EmailMessage()
-    msg['Subject'] = "Reset Password"
-    msg['From'] = smtp_username
-    msg['To'] = email
-    msg.set_content(f"Password reset email sent to {email}. Token: {token}")
+    smtp_server = None
+    try:
+        smtp_server = establish_smtp_connection()
 
-    smtp_server.send_message(msg)
+        msg = EmailMessage()
+        msg['Subject'] = "Reset Password"
+        msg['From'] = smtp_username
+        msg['To'] = email
+        msg.set_content(f"Password reset email sent to {email}. Token: {token}")
 
-    smtp_server.quit()
+        smtp_server.send_message(msg)
 
-    return {"message": "Email reset password telah dikirim"}
+        smtp_server.quit()
+
+        return {
+            "message": "Email reset password telah dikirim"
+            }
+    except Exception as e:
+        if smtp_server:
+            smtp_server.quit()
+        raise Exception("Failed to send password reset email") from e
 
 secret_key = '9f6bd57617dc7827602641f05b611bf2e33f674c3b57010d7e5e42a50035bcf2'
 #os.environ.get('SECRET_KEY')
