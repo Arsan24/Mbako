@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Form, File, Header, Depends, UploadFile
+from fastapi import APIRouter, HTTPException, Form, Path, File, Header, Depends, UploadFile
 from fastapi.security import OAuth2PasswordBearer
 from function import decodeJWT, upload_to_bucket
 from auth.schema import Item
@@ -82,7 +82,7 @@ async def create_item(
 # Get a specific item by item_id.
 @router.get("/api/items/:{item_id}")
 def get_item(
-    item_id: str | None,
+    item_id: str = Path(),
     authorization: str = Depends(oauth2_scheme)
 ):
     decoded_token = decodeJWT(authorization)
@@ -109,7 +109,7 @@ def get_item(
 # Update a specific item by item_id.
 @router.put("/api/items/:{item_id}")
 async def update_item(
-    item_id: str, 
+    item_id: str = Path(), 
     image: UploadFile = File(default=None), 
     pname: str = Form(), 
     price: int = Form(),
@@ -135,7 +135,7 @@ async def update_item(
 
 # Delete a specific item by item_id.
 @router.delete("/api/items/:{item_id}")
-def delete_item(item_id: str):
+def delete_item(item_id: str = Path()):
  
     item_ref = db.collection('items').document(item_id)
     item_ref.delete()
@@ -148,7 +148,7 @@ def delete_item(item_id: str):
 # update the stock on purchased and save the transaction record
 @router.post("/api/items/:{item_id}/buy")
 async def buy_item(
-    item_id: str = Form(), 
+    item_id: str = Path(), 
     authorization: str = Depends(oauth2_scheme),
     quantity: int = Form(),
 ):
