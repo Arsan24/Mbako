@@ -41,6 +41,8 @@ def send_password_reset_email(email, token):
 
     smtp_server.send_message(msg)
 
+    smtp_server.quit()
+
     return {"message": "Email reset password telah dikirim"}
 
 secret_key = '9f6bd57617dc7827602641f05b611bf2e33f674c3b57010d7e5e42a50035bcf2'
