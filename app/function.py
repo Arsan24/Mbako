@@ -15,8 +15,8 @@ app_password = os.environ.get('SMTP_PASS')
 # Configure smtp settings
 smtp_host = "smtp.gmail.com"
 smtp_port = 465
-smtp_username = app_email
-smtp_password = app_password
+smtp_username = "m.shafanatama@gmail.com"
+smtp_password = "sllbpeqebvfberoc"
 
 # Create a connection to the SMTP server
 smtp_server = smtplib.SMTP_SSL(smtp_host, smtp_port)
@@ -43,7 +43,8 @@ def send_password_reset_email(email, token):
 
     return {"message": "Email reset password telah dikirim"}
 
-secret_key = os.environ.get('SECRET_KEY')
+secret_key = '9f6bd57617dc7827602641f05b611bf2e33f674c3b57010d7e5e42a50035bcf2'
+#os.environ.get('SECRET_KEY')
 
 # Generate access token
 def generate_access_token(username: str):
