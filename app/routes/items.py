@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Form, File, Header, Depends
+from fastapi import APIRouter, HTTPException, Form, File, Header, Depends, UploadFile
 from fastapi.security import OAuth2PasswordBearer
 from function import decodeJWT
 from auth.schema import Item
@@ -53,7 +53,7 @@ def get_items(
 @router.post("/api/items")
 async def create_item(
     authorization: str = Depends(oauth2_scheme),
-    image: bytes = File(), 
+    image: UploadFile = File(), 
     pname: str = Form(), 
     price: int = Form(),
     quantity: int = Form()
@@ -112,7 +112,7 @@ def get_item(
         raise HTTPException(status_code=404, detail="Barang tidak ditemukan")
     
 # Update a specific item by item_id.
-@router.put("/api/items/{item_id}")
+@router.put("/api/items/:{item_id}")
 async def update_item(
     item_id: str, 
     image: bytes = File(default=None), 
@@ -141,7 +141,7 @@ async def update_item(
         raise HTTPException(status_code=404, detail="Barang tidak ditemukan")
 
 # Delete a specific item by item_id.
-@router.delete("/api/items/{item_id}")
+@router.delete("/api/items/:{item_id}")
 def delete_item(item_id: str):
  
     item_ref = db.collection('items').document(item_id)
@@ -153,9 +153,9 @@ def delete_item(item_id: str):
     }
 
 # update the stock on purchased and save the transaction record
-@router.post("/api/items/{item_id}/buy")
+@router.post("/api/items/:{item_id}/buy")
 async def buy_item(
-    item_id: str, 
+    item_id: str | None, 
     quantity: int = Form(),
     username: str = Header(None)
 ):

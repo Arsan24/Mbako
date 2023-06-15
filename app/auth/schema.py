@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from fastapi import UploadFile
 
 # define the basemodel
 
@@ -12,7 +13,7 @@ class UserRegistration(BaseModel):
 
 # Item Data Model
 class Item(BaseModel):
-    image: str
+    image: UploadFile
     pname: str
     price: int
     quantity: int
