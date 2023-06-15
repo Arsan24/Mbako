@@ -64,8 +64,7 @@ async def login(
         "error": False, 
         "message": "Berhasil masuk!", 
         "loginResult": user_info,
-        "access_token": access_token,
-        "token_type":"bearer"
+        "access_token": access_token
     }
 
 # Forgot-password Endpoint
