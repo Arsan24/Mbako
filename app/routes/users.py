@@ -2,7 +2,8 @@ from fastapi import APIRouter, HTTPException, Form
 from auth.dbfirestore import db
 from passlib.hash import bcrypt
 from firebase_admin import firestore
-from function import generate_token, store_token, send_password_reset_email
+from function import generate_token, store_token, delete_reset_token, send_password_reset_email, generate_access_token
+import asyncio
 
 router = APIRouter()
 
@@ -51,16 +52,20 @@ async def login(
     if not bcrypt.verify(password, stored_password):
         raise HTTPException(status_code=401, detail="Username atau kata sandi salah")
 
+    access_token = generate_access_token(username)
+
     user_info = {
         "username": user_data.to_dict()["username"],
         "contact": user_data.to_dict()["contact"],
-        "email": user_data.to_dict()["email"]
+        "email": user_data.to_dict()["email"],
+        "token": access_token
     }
 
     return {
         "error": False, 
         "message": "Berhasil masuk!", 
-        "loginResult": user_info
+        "loginResult": user_info,
+        "access_token": access_token
     }
 
 # Forgot-password Endpoint
@@ -77,6 +82,8 @@ async def forgot_password(email: str = Form()):
     reset_token = generate_token()
     for user in users:
         store_token(user.id, reset_token)
+
+    asyncio.create_task(delete_reset_token(user.id))
 
     # Send the password reset email
     send_password_reset_email(email, reset_token)

@@ -1,25 +1,38 @@
-from fastapi import APIRouter, HTTPException, Form, File
+from fastapi import APIRouter, HTTPException, Form, File, Header, Depends, UploadFile
+from fastapi.security import OAuth2PasswordBearer
+from function import decodeJWT, upload_to_bucket
 from auth.schema import Item
 from auth.dbfirestore import db
-import base64
-from PIL import Image
-import io
 from datetime import datetime
 from typing import Optional 
+import itertools
 
 router = APIRouter()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 # Get a list of all items.
 @router.get("/api/items")
-def get_items(page: Optional[int] = None, size: Optional[int] = None):
- 
+def get_items(
+    authorization: str = Depends(oauth2_scheme),
+    page: Optional[int] = None, 
+    size: Optional[int] = None
+):
+    decoded_token = decodeJWT(authorization)
+    if not decoded_token:
+        return {"error": "Invalid token"}
+
+    username = decoded_token.get("sub")
+    if not username:
+        return {"error": "Invalid token"}
+    
+
     items = []
     collection_ref = db.collection('items')
 
     if page is not None and size is not None:
         start_index = (page - 1) * size
         end_index = start_index + size
-        docs = collection_ref.stream()[start_index:end_index]
+        docs = itertools.islice(collection_ref.stream(), start_index, end_index)
     else:
         docs = collection_ref.stream()
 
@@ -27,10 +40,6 @@ def get_items(page: Optional[int] = None, size: Optional[int] = None):
         item = doc.to_dict()
         item_id = doc.id
         item['item_id'] = item_id
-        encoded_image = item['image']
-        image_bytes = base64.b64decode(encoded_image)
-        decoded_image = Image.open(io.BytesIO(image_bytes))
-        item['image'] = decoded_image
         items.append(item)
 
     return {
@@ -42,18 +51,27 @@ def get_items(page: Optional[int] = None, size: Optional[int] = None):
 # Create a new item.
 @router.post("/api/items")
 async def create_item(
-    image: bytes = File(), 
+    authorization: str = Depends(oauth2_scheme),
+    image: UploadFile = File(), 
     pname: str = Form(), 
     price: int = Form(),
     quantity: int = Form()
 ):
+    decoded_token = decodeJWT(authorization)
+    if not decoded_token:
+        return {"error": "Invalid token"}
+
+    username = decoded_token.get("sub")
+    if not username:
+        return {"error": "Invalid token"}
     
-    img_base64 = base64.b64encode(image).decode('utf-8')
-    item = Item(image=img_base64, pname=pname, price=price, quantity=quantity)
+    image_url = upload_to_bucket(image.file)
+    createdAt = datetime.now()
+    item = Item(image=image_url, pname=pname, price=price, quantity=quantity, createdAt=createdAt)
     item_data = item.dict()
     collection_ref = db.collection('items')
     doc_ref = collection_ref.document()
-    item_data['id'] = doc_ref.id
+    item_data['item_id'] = doc_ref.id
     doc_ref.set(item_data)
 
     return {
@@ -62,27 +80,37 @@ async def create_item(
     }
 
 # Get a specific item by item_id.
-@router.get("/api/items/{item_id}")
-def get_item(item_id: str):
- 
+@router.get("/api/items/:{item_id}")
+def get_item(
+    item_id: str | None,
+    authorization: str = Depends(oauth2_scheme)
+):
+    decoded_token = decodeJWT(authorization)
+    if not decoded_token:
+        return {"error": "Invalid token"}
+
+    username = decoded_token.get("sub")
+    if not username:
+        return {"error": "Invalid token"}
+    
     item_ref = db.collection('items').document(item_id)
     item = item_ref.get()
 
     if item.exists:
         item_data = item.to_dict()
-        if 'image' in item_data:
-            image_base64 = item_data['image']
-            image_bytes = base64.b64decode(image_base64)
-            item_data['image'] = image_bytes
-        return item_data
+        return {
+        "error": False,
+        "message": "Get Item Success!",
+        "listItems": item_data
+    }
     else:
         raise HTTPException(status_code=404, detail="Barang tidak ditemukan")
     
 # Update a specific item by item_id.
-@router.put("/api/items/{item_id}")
+@router.put("/api/items/:{item_id}")
 async def update_item(
     item_id: str, 
-    image: bytes = File(default=None), 
+    image: UploadFile = File(default=None), 
     pname: str = Form(), 
     price: int = Form(),
     quantity: int = Form()
@@ -92,9 +120,7 @@ async def update_item(
 
     if item.exists:
         item_data = item.to_dict()
-        if image is not None:
-            image_base64 = base64.b64encode(image).decode('utf-8')
-            item_data['image'] = image_base64
+        item_data['image'] = image
         item_data['pname'] = pname
         item_data['price'] = price
         item_data['quantity'] = quantity
@@ -108,7 +134,7 @@ async def update_item(
         raise HTTPException(status_code=404, detail="Barang tidak ditemukan")
 
 # Delete a specific item by item_id.
-@router.delete("/api/items/{item_id}")
+@router.delete("/api/items/:{item_id}")
 def delete_item(item_id: str):
  
     item_ref = db.collection('items').document(item_id)
@@ -120,8 +146,12 @@ def delete_item(item_id: str):
     }
 
 # update the stock on purchased and save the transaction record
-@router.post("/api/items/{item_id}/buy")
-async def buy_item(item_id: str, quantity: int):
+@router.post("/api/items/:{item_id}/buy")
+async def buy_item(
+    item_id: str | None, 
+    quantity: int = Form(),
+    username: str = Header(None)
+):
 
     item_ref = db.collection('items').document(item_id)
     item = item_ref.get()
@@ -139,6 +169,7 @@ async def buy_item(item_id: str, quantity: int):
             
             transaction_data = {
                 'item_id': item_id,
+                'buyer': username,
                 'product': item_data.get('pname'),
                 'quantity': quantity,
                 'total_price': total_price,
@@ -149,7 +180,8 @@ async def buy_item(item_id: str, quantity: int):
 
             return {
                 "error": False,
-                "message": f"Total pembelian: {total_price}"
+                "message": f"Pembelian Berhasil!",
+                "transactionResult": transaction_data
             }
         else:
             return {
