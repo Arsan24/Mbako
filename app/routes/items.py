@@ -169,7 +169,7 @@ def delete_item(
 async def buy_item(
     authorization: str = Depends(oauth2_scheme),
     item_id: str = Form(), 
-    quantity: str = Form()
+    quantity: int = Form()
 ):
     if not item_id:
         return {"error": "Item ID is missing"}
