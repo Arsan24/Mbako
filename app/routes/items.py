@@ -148,7 +148,7 @@ def delete_item(item_id: str):
 # update the stock on purchased and save the transaction record
 @router.post("/api/items/:{item_id}/buy")
 async def buy_item(
-    item_id: str | None, 
+    item_id: str = Form(), 
     authorization: str = Depends(oauth2_scheme),
     quantity: int = Form(),
 ):
