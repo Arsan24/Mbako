@@ -2,7 +2,8 @@ from fastapi import APIRouter, HTTPException, Form
 from auth.dbfirestore import db
 from passlib.hash import bcrypt
 from firebase_admin import firestore
-from function import generate_token, store_token, send_password_reset_email, generate_access_token
+from function import generate_token, store_token, delete_reset_token, send_password_reset_email, generate_access_token
+import asyncio
 
 router = APIRouter()
 
@@ -81,6 +82,8 @@ async def forgot_password(email: str = Form()):
     reset_token = generate_token()
     for user in users:
         store_token(user.id, reset_token)
+
+    asyncio.create_task(delete_reset_token(user.id))
 
     # Send the password reset email
     send_password_reset_email(email, reset_token)

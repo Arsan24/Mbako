@@ -1,12 +1,14 @@
 from random import randint
 from google.cloud import storage
 from auth.dbfirestore import db
+from firebase_admin import firestore
 import smtplib
 from email.message import EmailMessage
 import uuid
 import time
 import jwt
 import os
+import asyncio
 
 app_email = os.environ.get('SMTP_EMAIL')
 app_password = os.environ.get('SMTP_PASS')
@@ -36,6 +38,12 @@ def generate_token():
 def store_token(user_id, token):
     user_ref = db.collection("users").document(user_id)
     user_ref.set({"reset_token": token}, merge=True)
+
+# Delete Reset Token after few minutes
+async def delete_reset_token(user_id):
+    await asyncio.sleep(600)
+    user_ref = db.collection("users").document(user_id)
+    user_ref.update({"reset_token": firestore.DELETE_FIELD})
 
 # Send password reset email
 def send_password_reset_email(email, token):
