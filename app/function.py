@@ -76,7 +76,7 @@ def send_password_reset_email(email, token):
     except Exception as e:
         if smtp_server:
             smtp_server.quit()
-        raise Exception("Failed to send password reset email") from e
+        raise Exception("Gagal mengirim token ke email") from e
 
 secret_key = '9f6bd57617dc7827602641f05b611bf2e33f674c3b57010d7e5e42a50035bcf2'
 #os.environ.get('SECRET_KEY')
