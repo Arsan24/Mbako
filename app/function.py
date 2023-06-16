@@ -84,7 +84,7 @@ secret_key = '9f6bd57617dc7827602641f05b611bf2e33f674c3b57010d7e5e42a50035bcf2'
 # Generate access token
 def generate_access_token(username: str):
     payload = {
-        "exp": time.time() + 1800, 
+        "exp": time.time() + 3600, 
         "sub": username
     }
     access_token = jwt.encode(payload, secret_key, algorithm='HS256')

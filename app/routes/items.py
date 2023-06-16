@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Form, File, Header, Depends, UploadFile
+from fastapi import APIRouter, HTTPException, Form, Path, File, Header, Depends, UploadFile
 from fastapi.security import OAuth2PasswordBearer
 from function import decodeJWT, upload_to_bucket
 from auth.schema import Item
@@ -80,9 +80,9 @@ async def create_item(
     }
 
 # Get a specific item by item_id.
-@router.get("/api/items/:{item_id}")
+@router.get("/api/items/id")
 def get_item(
-    item_id: str | None,
+    item_id: str = Form(),
     authorization: str = Depends(oauth2_scheme)
 ):
     decoded_token = decodeJWT(authorization)
@@ -107,14 +107,23 @@ def get_item(
         raise HTTPException(status_code=404, detail="Barang tidak ditemukan")
     
 # Update a specific item by item_id.
-@router.put("/api/items/:{item_id}")
+@router.put("/api/items/update")
 async def update_item(
-    item_id: str, 
+    authorization: str = Depends(oauth2_scheme),
+    item_id: str = Form(), 
     image: UploadFile = File(default=None), 
     pname: str = Form(), 
     price: int = Form(),
     quantity: int = Form()
 ):
+    decoded_token = decodeJWT(authorization)
+    if not decoded_token:
+        return {"error": "Invalid token"}
+
+    username = decoded_token.get("sub")
+    if not username:
+        return {"error": "Invalid token"}
+
     item_ref = db.collection('items').document(item_id)
     item = item_ref.get()
 
@@ -134,9 +143,19 @@ async def update_item(
         raise HTTPException(status_code=404, detail="Barang tidak ditemukan")
 
 # Delete a specific item by item_id.
-@router.delete("/api/items/:{item_id}")
-def delete_item(item_id: str):
- 
+@router.delete("/api/items/delete")
+def delete_item(
+    authorization: str = Depends(oauth2_scheme),
+    item_id: str = Form()
+):
+    decoded_token = decodeJWT(authorization)
+    if not decoded_token:
+        return {"error": "Invalid token"}
+
+    username = decoded_token.get("sub")
+    if not username:
+        return {"error": "Invalid token"}
+
     item_ref = db.collection('items').document(item_id)
     item_ref.delete()
 
@@ -146,13 +165,23 @@ def delete_item(item_id: str):
     }
 
 # update the stock on purchased and save the transaction record
-@router.post("/api/items/:{item_id}/buy")
+@router.post("/api/items/buy")
 async def buy_item(
-    item_id: str | None, 
-    quantity: int = Form(),
-    username: str = Header(None)
+    authorization: str = Depends(oauth2_scheme),
+    item_id: str = Form(), 
+    quantity: int = Form()
 ):
+    if not item_id:
+        return {"error": "Item ID is missing"}
 
+    decoded_token = decodeJWT(authorization)
+    if not decoded_token:
+        return {"error": "Invalid token"}
+
+    username = decoded_token.get("sub")
+    if not username:
+        return {"error": "Invalid token"}
+    
     item_ref = db.collection('items').document(item_id)
     item = item_ref.get()
 
@@ -181,7 +210,6 @@ async def buy_item(
             return {
                 "error": False,
                 "message": f"Pembelian Berhasil!",
-                "transactionResult": transaction_data
             }
         else:
             return {
